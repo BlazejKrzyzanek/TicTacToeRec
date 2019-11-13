@@ -9,7 +9,7 @@ images = []
 def import_files(directory='*', file='*.jpg'):
     for file in glob.glob("../data/" + directory + "/" + file):
         image = io.imread(file)
-        image = transform.resize(image, (500, 500))
+        image = transform.resize(image, (250, 250))
         images.append(image)
 
 
@@ -37,4 +37,4 @@ def calculate():
 if __name__ == "__main__":
     import_files("easy")
     calculate()
-    show_images()
+    # show_images()
