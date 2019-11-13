@@ -1,0 +1,2 @@
+# TicTacToeRec
+recognition from images
