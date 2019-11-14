@@ -57,7 +57,7 @@ def find_boards(img):
     potential_boards = []
     for c in contours:
         peri = cv2.arcLength(c, True)
-        approx = cv2.approxPolyDP(c, 0.04 * peri, True)
+        approx = cv2.approxPolyDP(c, 0.05 * peri, True)
 
         if len(approx) == 4:
             potential_boards.append(approx)
@@ -76,10 +76,11 @@ def find_boards(img):
 
         src_pts = box.astype("float32")
         src_pts = transform_src_pts(src_pts)
-        dst_pts = np.array([[0, h - 1],
+
+        dst_pts = np.array([[0, h],
                             [0, 0],
-                            [w - 1, 0],
-                            [w - 1, h - 1]], dtype="float32")
+                            [w, 0],
+                            [w, h]], dtype="float32")
 
         dst_pts *= 3
 
