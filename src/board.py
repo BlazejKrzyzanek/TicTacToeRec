@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import skimage as ski
 import skimage.morphology as mp
+from skimage.filters.rank import mean_bilateral
 from scipy import ndimage as ndi
 from skimage import io
 
@@ -10,12 +11,6 @@ def show_boards(boards):
     for board in boards:
         io.imshow(board)
         io.show()
-
-
-def debug_show(img):
-    boards_img = ski.img_as_ubyte(img)
-    cv2.imshow("Image", boards_img)
-    k = cv2.waitKey(0)
 
 
 def transform_src_pts(src_pts):
@@ -40,6 +35,7 @@ def find_boards(img):
 
     img = ski.img_as_ubyte(img)
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
     edges = cv2.Canny(gray, 40, 70)
 
     boards_img = ski.img_as_bool(edges)
@@ -61,7 +57,7 @@ def find_boards(img):
 
         if len(approx) == 4:
             potential_boards.append(approx)
-            cv2.drawContours(debug_img, approx, -1, (0, 0, 255), 5)
+            # cv2.drawContours(img, approx, -1, (0, 0, 255), 5)
 
     for b in potential_boards:
         M = cv2.moments(b)
@@ -86,12 +82,20 @@ def find_boards(img):
 
         M = cv2.getPerspectiveTransform(src_pts, dst_pts)
 
-        warped = cv2.warpPerspective(img, M, (int(w * 1.8 * 3), int(h * 1.8 * 3)))
+        bg_color = np.mean(img)
 
-        boards.append(warped)
+        warped = cv2.warpPerspective(img, M, (int(w * 1.8 * 3), int(h * 1.8 * 3)), borderMode=cv2.BORDER_CONSTANT,
+                                     borderValue=(bg_color, bg_color, bg_color))
 
-    debug_show(debug_img)
+        gray = cv2.cvtColor(warped, cv2.COLOR_RGB2GRAY)
+        gray = mean_bilateral(ski.img_as_ubyte(gray), mp.disk(5), s0=10, s1=10)
+        gray = ski.img_as_float(gray)
+        gray = 1 - gray
+
+        gray = cv2.resize(gray, (100, 100))
+        boards.append(ski.img_as_float(gray))
+
     cv2.destroyAllWindows()
 
-    show_boards(boards)
+    # show_boards(boards)
     return boards
